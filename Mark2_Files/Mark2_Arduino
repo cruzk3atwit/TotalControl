@@ -1,73 +1,69 @@
+/*
+ * tinkerBOY's usb_gamepad v1.0
+ * 
+ */
+
 #include <Joystick.h>
 
-const int buttonPins[] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, A2, A5};
+#define PINS 14
+#define ENABLE_ANALOG1 true
+int X1 = A0;
+int Y1 = A1;
 
-//Postion in Array denotes what the Axis is {X, Y, Button}
-const int joystick1Pins[] = {A0, A1};
-const int joystick2Pins[] = {A3, A4};
+int X2 = A3;
+int Y2 = A4;
 
-Joystick_ joystick1(JOYSTICK_DEFAULT_REPORT_ID, 
-  JOYSTICK_TYPE_JOYSTICK, 32, 0,
-  false, false, false, false, false, false,
-  false, false, false, false, false);
+Joystick_ Joystick(0x15, JOYSTICK_TYPE_GAMEPAD, PINS, 0, 
+  true, true, false, true, true, false, false, false, false, false, false);
 
-Joystick_ joystick2(JOYSTICK_DEFAULT_REPORT_ID + 1, 
-  JOYSTICK_TYPE_JOYSTICK, 32, 0,
-  false, false, false, false, false, false,
-  false, false, false, false, false);
+class CButton {
+  public:
+  int pin = NULL;
+  int lastState = 0;
+  
+  CButton(int p) {
+    pin = p;
+  }
+};
+
+CButton Buttons[PINS] ={2,3,4,5,6,7,8,9,10,11,12,13, A2, A5};
 
 void setup() {
-  Serial.begin(9600); // Initialize the serial communication
-
-  for (int i = 0; i < 12; i++) {
-    pinMode(buttonPins[i], INPUT_PULLUP);
+  for(int i=0 ; i<PINS ;i++) {
+    pinMode(Buttons[i].pin, INPUT_PULLUP);
   }
+
+  Joystick.begin();
+  if (ENABLE_ANALOG1) {
+    Joystick.setXAxisRange(-512, 512);
+    Joystick.setYAxisRange(-512, 512);
+
+    Joystick.setRxAxisRange(-512, 512);
+    Joystick.setRyAxisRange(-512, 512);
+  }
+}
+
+void JButtonStates() {
+  if (ENABLE_ANALOG1) {
+    Joystick.setXAxis(analogRead(X1) - 512);
+    Joystick.setYAxis(analogRead(Y1) - 512);
+    
+    Joystick.setRxAxis(analogRead(X2) - 512);
+    Joystick.setRyAxis(analogRead(Y2) - 512);
   
-  joystick1.begin();
-  joystick2.begin();
+  for (int i = 0; i < PINS; i++) {
+    int currentState = !digitalRead(Buttons[i].pin);
+    
+    if (currentState != Buttons[i].lastState) {
+      Joystick.setButton(i, currentState);                                                                                                                           
+      Buttons[i].lastState = currentState;
+    }
+  }  
+}
+
 }
 
 void loop() {
-  for (int i = 0; i < 12; i++) {
-    joystick1.setButton(i, !digitalRead(buttonPins[i]));
-    joystick2.setButton(i, !digitalRead(buttonPins[i]));
-  }
-  
-  //Analog Joystick State, 
-  int xValue1 = analogRead(joystick1Pins[0]);
-  int yValue1 = analogRead(joystick1Pins[1]);
-  joystick1.setXAxis(xValue1);
-  joystick1.setYAxis(yValue1);
-  
-  int xValue2 = analogRead(joystick2Pins[0]);
-  int yValue2 = analogRead(joystick2Pins[1]);
-  joystick2.setXAxis(xValue2);
-  joystick2.setYAxis(yValue2);
-
-  // Print readings to the serial monitor
-  Serial.print("Button states - Joystick 1: ");
-  for (int i = 0; i < 12; i++) {
-    Serial.print(digitalRead(buttonPins[i]));
-    Serial.print(" ");
-  }
-  Serial.println();
-
-  Serial.print("Joystick 1 - X: ");
-  Serial.print(xValue1);
-  Serial.print(", Y: ");
-  Serial.println(yValue1);
-
-    Serial.print("Joystick 2 - X: ");
-  Serial.print(xValue2);
-  Serial.print(", Y: ");
-  Serial.println(yValue2);
-
- Serial.print("Button states - Joystick 2: ");
-for (int i = 0; i < 12; i++) {
-  Serial.print(digitalRead(buttonPins[i]));
-  Serial.print(" ");
-}
-
-Serial.println();
-
+  JButtonStates();
+  delay(50);
 }
