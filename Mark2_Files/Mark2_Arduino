@@ -1,0 +1,73 @@
+#include <Joystick.h>
+
+const int buttonPins[] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, A2, A5};
+
+//Postion in Array denotes what the Axis is {X, Y, Button}
+const int joystick1Pins[] = {A0, A1};
+const int joystick2Pins[] = {A3, A4};
+
+Joystick_ joystick1(JOYSTICK_DEFAULT_REPORT_ID, 
+  JOYSTICK_TYPE_JOYSTICK, 32, 0,
+  false, false, false, false, false, false,
+  false, false, false, false, false);
+
+Joystick_ joystick2(JOYSTICK_DEFAULT_REPORT_ID + 1, 
+  JOYSTICK_TYPE_JOYSTICK, 32, 0,
+  false, false, false, false, false, false,
+  false, false, false, false, false);
+
+void setup() {
+  Serial.begin(9600); // Initialize the serial communication
+
+  for (int i = 0; i < 12; i++) {
+    pinMode(buttonPins[i], INPUT_PULLUP);
+  }
+  
+  joystick1.begin();
+  joystick2.begin();
+}
+
+void loop() {
+  for (int i = 0; i < 12; i++) {
+    joystick1.setButton(i, !digitalRead(buttonPins[i]));
+    joystick2.setButton(i, !digitalRead(buttonPins[i]));
+  }
+  
+  //Analog Joystick State, 
+  int xValue1 = analogRead(joystick1Pins[0]);
+  int yValue1 = analogRead(joystick1Pins[1]);
+  joystick1.setXAxis(xValue1);
+  joystick1.setYAxis(yValue1);
+  
+  int xValue2 = analogRead(joystick2Pins[0]);
+  int yValue2 = analogRead(joystick2Pins[1]);
+  joystick2.setXAxis(xValue2);
+  joystick2.setYAxis(yValue2);
+
+  // Print readings to the serial monitor
+  Serial.print("Button states - Joystick 1: ");
+  for (int i = 0; i < 12; i++) {
+    Serial.print(digitalRead(buttonPins[i]));
+    Serial.print(" ");
+  }
+  Serial.println();
+
+  Serial.print("Joystick 1 - X: ");
+  Serial.print(xValue1);
+  Serial.print(", Y: ");
+  Serial.println(yValue1);
+
+    Serial.print("Joystick 2 - X: ");
+  Serial.print(xValue2);
+  Serial.print(", Y: ");
+  Serial.println(yValue2);
+
+ Serial.print("Button states - Joystick 2: ");
+for (int i = 0; i < 12; i++) {
+  Serial.print(digitalRead(buttonPins[i]));
+  Serial.print(" ");
+}
+
+Serial.println();
+
+}
