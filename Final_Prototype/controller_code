@@ -1,0 +1,97 @@
+#include <XInput.h>
+
+//2 and 3 are R3 and L3
+boolean b_R3_state = digitalRead(2);
+boolean b_L3_state = digitalRead(3);
+boolean b_A_state = digitalRead(4);
+boolean b_B_state = digitalRead(5);
+boolean b_X_state = digitalRead(6);
+boolean b_Y_state = digitalRead(7);
+boolean b_dPad_Up_state = digitalRead(8);
+boolean b_dPad_Down_state = digitalRead(9);
+boolean b_dPad_Right_state = digitalRead(10);
+boolean b_dPad_Left_state = digitalRead(11);
+boolean b_RB_state = digitalRead(12);
+boolean b_LB_state = digitalRead(13);
+boolean b_RT_state = digitalRead(A4);
+boolean b_LT_state = digitalRead(A5);
+
+
+int joy_R[] = {analogRead(A0),analogRead(A1)};
+int joy_L[] = {analogRead(A2),analogRead(A3)};
+
+int scaledRX;
+int scaledRY;
+int scaledLX;
+int scaledLY;
+
+void setup() {
+  // put your setup code here, to run once:
+
+  XInput.begin();
+}
+
+void loop() {
+ // put your main code here, to run repeatedly:
+ // Update control surfaces here
+
+joy_R[0] = analogRead(A0);
+joy_R[1] = analogRead(A1);
+joy_L[0] = analogRead(A2);
+joy_L[1] = analogRead(A3);
+
+scaledRX = int((joy_R[0]-(512)) * (32767/(1023/2)));
+scaledRY = int((joy_R[1]-(512)) * (32767/(1023/2)));
+scaledLX = int((joy_L[0]-(512)) * (32767/(1023/2)));
+scaledLY = int((joy_L[1]-(512)) * (32767/(1023/2)));
+
+
+b_R3_state = digitalRead(2);
+b_L3_state = digitalRead(3);
+b_A_state = digitalRead(4);
+b_B_state = digitalRead(5);
+b_X_state = digitalRead(6);
+b_Y_state = digitalRead(7);
+b_dPad_Up_state = digitalRead(8);
+b_dPad_Down_state = digitalRead(9);
+b_dPad_Right_state = digitalRead(10);
+b_dPad_Left_state = digitalRead(11);
+b_RB_state = digitalRead(12);
+b_LB_state = digitalRead(13);
+
+XInput.setButton(BUTTON_R3, !b_R3_state);
+XInput.setButton(BUTTON_L3, !b_L3_state);
+XInput.setButton(BUTTON_A, !b_A_state);
+XInput.setButton(BUTTON_B, !b_B_state);
+XInput.setButton(BUTTON_Y, !b_Y_state);
+XInput.setButton(BUTTON_X, !b_X_state);
+XInput.setButton(DPAD_UP, !b_dPad_Up_state);
+XInput.setButton(DPAD_DOWN, !b_dPad_Down_state);
+XInput.setButton(DPAD_RIGHT, !b_dPad_Right_state);
+XInput.setButton(DPAD_LEFT, !b_dPad_Left_state);
+XInput.setButton(BUTTON_RB, !b_RB_state);
+XInput.setButton(BUTTON_LB, !b_LB_state);
+
+if (b_LT_state == HIGH){
+  XInput.press(TRIGGER_LEFT);
+}
+else {
+  XInput.release(TRIGGER_LEFT);
+}
+
+if (b_RT_state == HIGH){
+  XInput.press(TRIGGER_RIGHT);
+}
+else {
+  XInput.release(TRIGGER_RIGHT);
+}
+
+XInput.setJoystickX(JOY_LEFT, scaledLX);
+XInput.setJoystickY(JOY_LEFT, scaledLY);
+
+XInput.setJoystickX(JOY_RIGHT, scaledRX);
+XInput.setJoystickY(JOY_RIGHT, scaledRY);
+
+XInput.send();  // send data over USB
+delay(10);
+}
